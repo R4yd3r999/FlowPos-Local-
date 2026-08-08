@@ -703,7 +703,7 @@ async function renderBillar() {
       <div class="card-meta">${formatoMoneda(mesa.tarifa_por_minuto)}/min · ${configTexto}</div>
       ${sesion ? `
         <div class="timer-mesa" data-timer-inicio="${sesion.hora_inicio}" data-timer-modo="${sesion.modo}" data-timer-limite="${sesion.limite_minutos || ''}">00:00</div>
-        <div class="card-meta">${sesion.politica_cobro === 'hora_completa' ? 'Cobro por hora completa' : 'Cobro por tiempo exacto'}</div>
+        <div class="card-meta">${sesion.politica_cobro === 'hora_completa' ? 'Cobro por hora' : 'Cobro por minuto'}</div>
       ` : ''}
       <div class="mesa-acciones" style="margin-top:10px;"></div>
     `;
@@ -783,7 +783,7 @@ function abrirModalMesa(mesa) {
       <button type="button" class="btn btn-chico ${modo === 'cronometro' ? 'btn-primario' : 'btn-secundario'}" data-modo="cronometro">⏱️ Cronómetro (sin límite)</button>
       <button type="button" class="btn btn-chico ${modo === 'temporizador' ? 'btn-primario' : 'btn-secundario'}" data-modo="temporizador">⏳ Temporizador (con límite)</button>
     </div>
-    <p class="card-meta" style="margin:0 0 10px;">Cronómetro cuenta hacia arriba sin tope. Temporizador pone un límite y avisa cuando se cumple (no cobra ni cierra solo).</p>
+    <p class="card-meta" style="margin:0 0 10px;">Cronómetro cuenta hacia arriba, sin un plan de tiempo fijado de antemano. Temporizador es para cuando el cliente contrata un bloque de horas ("vamos a jugar 2 horas"): pone un límite y avisa cuando se cumple (no cobra ni cierra la mesa sola).</p>
 
     <div id="mb-limite-cont" style="${modo === 'temporizador' ? '' : 'display:none;'}margin-bottom:14px;">
       <label>Límite por defecto (horas)</label>
@@ -793,12 +793,17 @@ function abrirModalMesa(mesa) {
       <input type="number" id="mb-limite-horas" step="0.25" min="0.25" value="${limiteHoras}" style="width:100%;" />
     </div>
 
-    <label>Política de cobro por defecto</label>
-    <div class="fila" id="mb-politica-botones" style="margin-bottom:6px;">
-      <button type="button" class="btn btn-chico ${politica === 'exacto' ? 'btn-primario' : 'btn-secundario'}" data-politica="exacto">Por tiempo exacto</button>
-      <button type="button" class="btn btn-chico ${politica === 'hora_completa' ? 'btn-primario' : 'btn-secundario'}" data-politica="hora_completa">Por hora completa</button>
+    <div id="mb-politica-seccion" style="${modo === 'temporizador' ? 'display:none;' : ''}">
+      <label>Política de cobro por defecto</label>
+      <div class="fila" id="mb-politica-botones" style="margin-bottom:6px;">
+        <button type="button" class="btn btn-chico ${politica === 'exacto' ? 'btn-primario' : 'btn-secundario'}" data-politica="exacto">Por minuto</button>
+        <button type="button" class="btn btn-chico ${politica === 'hora_completa' ? 'btn-primario' : 'btn-secundario'}" data-politica="hora_completa">Por hora</button>
+      </div>
+      <p class="card-meta" style="margin:0 0 16px;">"Por minuto": se cobra el minuto real jugado, al precio por hora dividido entre 60 (nada de redondeos). "Por hora": conviene si no querés manejar centavos — cobra la hora completa una vez que se pasan de los 30 min jugados, y cada hora siguiente entra a cobrarse a los 10 min de haber empezado.</p>
     </div>
-    <p class="card-meta" style="margin:0 0 16px;">"Por hora completa": si empiezan a jugar la hora siguiente, esa hora se cobra entera aunque no la completen. "Por tiempo exacto": se cobra el minuto real jugado, nada más.</p>
+    <div id="mb-politica-fija-temporizador" class="card-meta" style="${modo === 'temporizador' ? '' : 'display:none;'}margin-bottom:16px;">
+      El Temporizador siempre cobra por hora completa — mismo criterio que "Por hora" en Cronómetro (30 min de gracia en la 1ª hora, 10 min de margen en las siguientes).
+    </div>
 
     <div class="fila">
       <button class="btn btn-primario" id="mb-guardar">Guardar</button>
@@ -813,6 +818,9 @@ function abrirModalMesa(mesa) {
       document.querySelectorAll('#mb-modo-botones [data-modo]').forEach((b) => b.classList.toggle('btn-primario', b === btn));
       document.querySelectorAll('#mb-modo-botones [data-modo]').forEach((b) => b.classList.toggle('btn-secundario', b !== btn));
       document.getElementById('mb-limite-cont').style.display = modo === 'temporizador' ? '' : 'none';
+      document.getElementById('mb-politica-seccion').style.display = modo === 'temporizador' ? 'none' : '';
+      document.getElementById('mb-politica-fija-temporizador').style.display = modo === 'temporizador' ? '' : 'none';
+      if (modo === 'temporizador') politica = 'hora_completa';
     });
   });
   document.querySelectorAll('#mb-politica-botones [data-politica]').forEach((btn) => {
@@ -881,7 +889,7 @@ function abrirModalIniciarBillar(mesa, cuentasAbiertas) {
 
   const resumenTexto = () => {
     const partes = [modo === 'temporizador' ? `Temporizador ${limiteHoras}h` : 'Cronómetro (sin límite)'];
-    partes.push(politica === 'hora_completa' ? 'cobro por hora completa' : 'cobro por tiempo exacto');
+    partes.push(politica === 'hora_completa' ? 'cobro por hora' : 'cobro por minuto');
     return partes.join(' · ');
   };
 
@@ -912,11 +920,16 @@ function abrirModalIniciarBillar(mesa, cuentasAbiertas) {
         </div>
         <input type="number" id="mib-limite-horas" step="0.25" min="0.25" value="${limiteHoras}" style="width:100%;" />
       </div>
-      <label>Política de cobro</label>
-      <div class="fila" id="mib-politica-botones" style="margin-bottom:16px;">
-        <button type="button" class="btn btn-chico ${politica === 'exacto' ? 'btn-primario' : 'btn-secundario'}" data-politica="exacto">Tiempo exacto</button>
-        <button type="button" class="btn btn-chico ${politica === 'hora_completa' ? 'btn-primario' : 'btn-secundario'}" data-politica="hora_completa">Hora completa</button>
+      <div id="mib-politica-seccion" style="${modo === 'temporizador' ? 'display:none;' : ''}">
+        <label>Política de cobro</label>
+        <div class="fila" id="mib-politica-botones" style="margin-bottom:6px;">
+          <button type="button" class="btn btn-chico ${politica === 'exacto' ? 'btn-primario' : 'btn-secundario'}" data-politica="exacto">Por minuto</button>
+          <button type="button" class="btn btn-chico ${politica === 'hora_completa' ? 'btn-primario' : 'btn-secundario'}" data-politica="hora_completa">Por hora</button>
+        </div>
       </div>
+      <p id="mib-politica-fija-temporizador" class="card-meta" style="${modo === 'temporizador' ? '' : 'display:none;'}margin-bottom:16px;">
+        El Temporizador siempre cobra por hora (30 min de gracia en la 1ª hora, 10 min de margen en las siguientes).
+      </p>
     </div>
 
     <div class="fila">
@@ -934,6 +947,9 @@ function abrirModalIniciarBillar(mesa, cuentasAbiertas) {
       document.querySelectorAll('#mib-modo-botones [data-modo]').forEach((b) => b.classList.toggle('btn-primario', b === btn));
       document.querySelectorAll('#mib-modo-botones [data-modo]').forEach((b) => b.classList.toggle('btn-secundario', b !== btn));
       document.getElementById('mib-limite-cont').style.display = modo === 'temporizador' ? '' : 'none';
+      document.getElementById('mib-politica-seccion').style.display = modo === 'temporizador' ? 'none' : '';
+      document.getElementById('mib-politica-fija-temporizador').style.display = modo === 'temporizador' ? '' : 'none';
+      if (modo === 'temporizador') politica = 'hora_completa';
       document.getElementById('mib-resumen').textContent = resumenTexto();
     });
   });
@@ -995,7 +1011,7 @@ async function finalizarBillar(mesaId) {
       body: { usuario_id: state.usuario.id },
     });
     const detalleTiempo = resultado.minutos_facturados !== resultado.minutos_calculados
-      ? `${resultado.minutos_calculados} min jugados, se cobran ${resultado.minutos_facturados} min (hora completa)`
+      ? `${resultado.minutos_calculados} min jugados, se cobran ${resultado.minutos_facturados} min (por hora)`
       : `${resultado.minutos_calculados} min`;
     toast(`Sesión finalizada: ${detalleTiempo}, ${formatoMoneda(resultado.monto_calculado)}`, 'exito');
     render();
@@ -1533,14 +1549,12 @@ async function renderMovimientos() {
     `<option value="${valor}" ${valor === state.movimientosFiltro.tipo ? 'selected' : ''}>${escapeHtml(etiqueta)}</option>`
   ).join('');
 
-  const exportarQs = qs ? `&${qs}` : '';
-
   main.innerHTML = `
     <div class="fila-entre">
       <h2 style="margin:0;">Movimientos de inventario</h2>
       <div class="fila">
-        <a class="btn btn-secundario btn-chico" href="${conUsuario('/api/reportes/movimientos.xlsx') + exportarQs}" target="_blank">Exportar Excel</a>
-        <a class="btn btn-secundario btn-chico" href="${conUsuario('/api/reportes/movimientos.pdf') + exportarQs}" target="_blank">Exportar PDF</a>
+        <button class="btn btn-secundario btn-chico" id="mov-exportar-xlsx" type="button">Exportar Excel</button>
+        <button class="btn btn-secundario btn-chico" id="mov-exportar-pdf" type="button">Exportar PDF</button>
       </div>
     </div>
     <p class="card-meta" style="margin:6px 0 0;">Registro completo de entradas y salidas de insumos — con o sin caja abierta. Nada se ajusta en silencio: cada fila tiene usuario, motivo y nota.</p>
@@ -1579,13 +1593,38 @@ async function renderMovimientos() {
   document.getElementById('mov-filtro-insumo').value = state.movimientosFiltro.insumo_id;
   document.getElementById('mov-filtro-tipo').value = state.movimientosFiltro.tipo;
 
-  document.getElementById('mov-aplicar-filtro').addEventListener('click', () => {
-    state.movimientosFiltro = {
+  // Los botones de exportar leen los filtros directamente del formulario
+  // en el momento del click -- así exportan exactamente lo que hay
+  // seleccionado en pantalla, se haya apretado "Filtrar" o no.
+  function _filtroFormularioActual() {
+    return {
       insumo_id: document.getElementById('mov-filtro-insumo').value,
       tipo: document.getElementById('mov-filtro-tipo').value,
       desde: document.getElementById('mov-filtro-desde').value,
       hasta: document.getElementById('mov-filtro-hasta').value,
     };
+  }
+  function _queryStringDesdeFiltro(f) {
+    const params = new URLSearchParams();
+    if (f.insumo_id) params.set('insumo_id', f.insumo_id);
+    if (f.tipo) params.set('tipo', f.tipo);
+    if (f.desde) params.set('desde', `${f.desde} 00:00:00`);
+    if (f.hasta) params.set('hasta', `${f.hasta} 23:59:59`);
+    return params.toString();
+  }
+  document.getElementById('mov-exportar-xlsx').addEventListener('click', () => {
+    const qsActual = _queryStringDesdeFiltro(_filtroFormularioActual());
+    const url = conUsuario('/api/reportes/movimientos.xlsx') + (qsActual ? `&${qsActual}` : '');
+    window.open(url, '_blank');
+  });
+  document.getElementById('mov-exportar-pdf').addEventListener('click', () => {
+    const qsActual = _queryStringDesdeFiltro(_filtroFormularioActual());
+    const url = conUsuario('/api/reportes/movimientos.pdf') + (qsActual ? `&${qsActual}` : '');
+    window.open(url, '_blank');
+  });
+
+  document.getElementById('mov-aplicar-filtro').addEventListener('click', () => {
+    state.movimientosFiltro = _filtroFormularioActual();
     render();
   });
   document.getElementById('mov-limpiar-filtro').addEventListener('click', () => {
@@ -2160,17 +2199,23 @@ async function abrirModalConfiguracion() {
     </button>
   `;
 
-  const seccionRed = (red && red.url_mesero) ? `
+  const urlsCandidatas = (red && red.urls_candidatas) || [];
+  const seccionRed = urlsCandidatas.length > 0 ? `
     <div style="border-top:1px solid var(--borde);padding-top:14px;margin-top:14px;">
       <strong style="font-size:0.85rem;color:var(--texto-tenue);">ACCESO DESDE CELULAR (MESEROS)</strong>
       <p class="card-meta" style="margin:6px 0 10px;">Los celulares deben estar en la misma red wifi que esta PC. Que el mesero escanee el código o escriba la dirección en su navegador.</p>
-      <div class="fila" style="align-items:flex-start;">
-        <img src="${API}/red/qr.svg?texto=${encodeURIComponent(red.url_mesero)}" alt="Código QR" style="width:140px;height:140px;background:#fff;border-radius:8px;padding:8px;flex-shrink:0;" />
-        <div>
-          <div class="card-meta">Dirección:</div>
-          <div class="monto" style="font-size:1.05rem;word-break:break-all;">${escapeHtml(red.url_mesero)}</div>
+      ${urlsCandidatas.length > 1 ? `
+        <p class="card-meta" style="margin:0 0 10px;color:var(--ambar);">Esta PC tiene más de una red activa a la vez — si la primera dirección no conecta desde el celular, probá con la siguiente.</p>
+      ` : ''}
+      ${urlsCandidatas.map((url, i) => `
+        <div class="fila" style="align-items:flex-start;${i > 0 ? 'margin-top:16px;border-top:1px solid var(--borde);padding-top:16px;' : ''}">
+          <img src="${API}/red/qr.svg?texto=${encodeURIComponent(url)}" alt="Código QR" style="width:140px;height:140px;background:#fff;border-radius:8px;padding:8px;flex-shrink:0;" />
+          <div>
+            ${urlsCandidatas.length > 1 ? `<div class="card-meta">Opción ${i + 1}${i === 0 ? ' (más probable)' : ''}:</div>` : '<div class="card-meta">Dirección:</div>'}
+            <div class="monto" style="font-size:1.05rem;word-break:break-all;">${escapeHtml(url)}</div>
+          </div>
         </div>
-      </div>
+      `).join('')}
     </div>
   ` : `
     <div style="border-top:1px solid var(--borde);padding-top:14px;margin-top:14px;">

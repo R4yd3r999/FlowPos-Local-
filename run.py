@@ -25,7 +25,7 @@ import webbrowser
 import uvicorn
 
 from app.main import app as fastapi_app
-from app.services.red import ip_lan
+from app.services.red import ips_lan_candidatas
 
 HOST = "0.0.0.0"
 HOST_LOCAL = "127.0.0.1"
@@ -51,10 +51,14 @@ if __name__ == "__main__":
 
     print("FlowPos (Local) -- iniciando...")
     print(f"Se abrirá solo en el navegador: http://{HOST_LOCAL}:{PORT}")
-    ip = ip_lan()
-    if ip:
-        print(f"Para meseros con celular (misma wifi): http://{ip}:{PORT}/mesero")
-        print("(También hay un código QR para esto en Configuración, dentro del sistema.)")
+    ips = ips_lan_candidatas()
+    if ips:
+        print("Para meseros con celular (misma wifi), probar en este orden:")
+        for ip in ips:
+            print(f"  http://{ip}:{PORT}/mesero")
+        if len(ips) > 1:
+            print("(Se detectó más de una red activa -- si la primera no responde desde el celular, probar la siguiente.)")
+        print("(También hay códigos QR para esto en Configuración, dentro del sistema.)")
     else:
         print("No se detectó una red wifi/LAN activa -- el acceso desde celular no estará disponible")
         print("hasta que esta PC esté conectada a la misma red que los meseros.")

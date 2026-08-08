@@ -15,7 +15,7 @@ import qrcode.image.svg
 from fastapi import APIRouter, Request
 from fastapi.responses import Response
 
-from app.services.red import ip_lan
+from app.services.red import ips_lan_candidatas
 
 router = APIRouter(prefix="/red", tags=["red"])
 
@@ -23,11 +23,13 @@ router = APIRouter(prefix="/red", tags=["red"])
 @router.get("/info")
 def info_red(request: Request) -> dict:
     puerto = request.url.port or 8000
-    ip = ip_lan()
+    candidatas = ips_lan_candidatas()
     return {
-        "ip_lan": ip,
+        "ip_lan": candidatas[0] if candidatas else None,
+        "ips_candidatas": candidatas,
         "puerto": puerto,
-        "url_mesero": f"http://{ip}:{puerto}/mesero" if ip else None,
+        "url_mesero": f"http://{candidatas[0]}:{puerto}/mesero" if candidatas else None,
+        "urls_candidatas": [f"http://{ip}:{puerto}/mesero" for ip in candidatas],
     }
 
 

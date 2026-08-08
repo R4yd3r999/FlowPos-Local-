@@ -10,18 +10,19 @@ tiene handshake), así que funciona incluso sin internet -- el sistema
 operativo igual resuelve qué interfaz de red usaría para llegar a esa
 IP, y esa es la IP local que buscamos. Por eso funciona bien en una
 LAN sin salida a internet, que es exactamente el caso de este negocio.
+
+Se listan VARIAS IPs candidatas, no solo una -- si el dispositivo tiene
+más de una interfaz activa a la vez (por ejemplo, un celular con wifi
+Y datos móviles prendidos, o una PC con wifi y una VPN), el truco de
+arriba puede sugerir la que NO es la de la red del negocio. Mostrando
+todas las candidatas, el Gerente puede probar cuál responde.
 """
 from __future__ import annotations
 
 import socket
 
 
-def ip_lan() -> str | None:
-    """
-    Mejor esfuerzo para encontrar la IP de esta máquina en la red local.
-    Devuelve None si no se pudo determinar (por ejemplo, sin ninguna
-    interfaz de red activa) -- quien llama debe manejar ese caso.
-    """
+def _ip_sugerida() -> str | None:
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
             # 10.255.255.255 nunca recibe el paquete (UDP no confirma
@@ -32,15 +33,34 @@ def ip_lan() -> str | None:
                 return ip
     except OSError:
         pass
+    return None
 
-    # Fallback: resolver el hostname de la máquina y quedarse con la
-    # primera IP que no sea loopback.
+
+def ips_lan_candidatas() -> list[str]:
+    """
+    Todas las IPs no-loopback que este dispositivo tiene asignadas
+    ahora mismo, con la más probable primero. Puede devolver una lista
+    vacía si no hay ninguna interfaz de red activa.
+    """
+    candidatas: list[str] = []
+
+    sugerida = _ip_sugerida()
+    if sugerida:
+        candidatas.append(sugerida)
+
     try:
         _, _, ips = socket.gethostbyname_ex(socket.gethostname())
         for ip in ips:
-            if not ip.startswith("127."):
-                return ip
+            if not ip.startswith("127.") and ip not in candidatas:
+                candidatas.append(ip)
     except OSError:
         pass
 
-    return None
+    return candidatas
+
+
+def ip_lan() -> str | None:
+    """Mejor esfuerzo: una sola IP, para quien no necesita la lista
+    completa. Ver ips_lan_candidatas() si el resultado no conecta."""
+    candidatas = ips_lan_candidatas()
+    return candidatas[0] if candidatas else None

@@ -10,6 +10,7 @@ from app.deps import get_conn
 from app.errors import ConflictError, NotFoundError
 from app.roles import SOLO_GERENTE
 from app.routers.auth import require_role, require_usuario
+from app.services import billar as billar_service
 from app.schemas import (
     FinalizarSesionBillar,
     IniciarSesionBillar,
@@ -61,6 +62,11 @@ def crear_mesa(payload: MesaBillarCreate, conn: sqlite3.Connection = Depends(get
         raise ConflictError(f"Ya existe una mesa activa llamada '{payload.nombre}'")
     if payload.modo_default == "temporizador" and not payload.limite_minutos_default:
         raise ConflictError("El modo Temporizador necesita un límite de minutos por defecto")
+    # El Temporizador siempre cobra por hora completa -- es su razón de
+    # ser (contratar un bloque de horas). El cobro por minuto exacto
+    # solo tiene sentido en Cronómetro, donde no hay un plan de horas
+    # de por medio.
+    politica = "hora_completa" if payload.modo_default == "temporizador" else payload.politica_cobro_default
     cur = conn.execute(
         """INSERT INTO mesas_billar
            (nombre, tarifa_por_minuto, modo_default, limite_minutos_default, politica_cobro_default)
@@ -70,7 +76,7 @@ def crear_mesa(payload: MesaBillarCreate, conn: sqlite3.Connection = Depends(get
             payload.tarifa_por_minuto,
             payload.modo_default,
             payload.limite_minutos_default,
-            payload.politica_cobro_default,
+            politica,
         ),
     )
     conn.commit()
@@ -101,6 +107,8 @@ def actualizar_mesa(
     limite_final = campos.get("limite_minutos_default", mesa["limite_minutos_default"])
     if modo_final == "temporizador" and not limite_final:
         raise ConflictError("El modo Temporizador necesita un límite de minutos por defecto")
+    if modo_final == "temporizador":
+        campos["politica_cobro_default"] = "hora_completa"
 
     sets = ", ".join(f"{k} = ?" for k in campos)
     valores = list(campos.values()) + [mesa_id]
@@ -138,8 +146,10 @@ def iniciar_sesion(
     modo = payload.modo or mesa["modo_default"]
     limite_minutos = payload.limite_minutos if payload.limite_minutos is not None else mesa["limite_minutos_default"]
     politica_cobro = payload.politica_cobro or mesa["politica_cobro_default"]
-    if modo == "temporizador" and not limite_minutos:
-        raise ConflictError("El modo Temporizador necesita un límite de minutos")
+    if modo == "temporizador":
+        if not limite_minutos:
+            raise ConflictError("El modo Temporizador necesita un límite de minutos")
+        politica_cobro = "hora_completa"
 
     cur = conn.execute(
         """INSERT INTO sesiones_billar (mesa_id, cuenta_id, modo, limite_minutos, politica_cobro)
@@ -171,11 +181,12 @@ def finalizar_sesion(
     minutos_reales = max(1, math.ceil((ahora - inicio).total_seconds() / 60))
 
     # Política de cobro: "exacto" cobra los minutos reales jugados (ya
-    # redondeados al minuto de arriba); "hora_completa" redondea eso
-    # hacia arriba a la hora entera -- si empezaron a jugar la segunda
-    # hora, esa hora se cobra completa, se haya usado entera o no.
+    # redondeados al minuto de arriba) -- solo aplica en Cronómetro.
+    # "hora_completa" usa la regla de margen de gracia (ver
+    # app/services/billar.py): no es un simple redondeo hacia arriba,
+    # tolera unos minutos de más antes de saltar a la hora siguiente.
     if sesion["politica_cobro"] == "hora_completa":
-        minutos_facturados = math.ceil(minutos_reales / 60) * 60
+        minutos_facturados = billar_service.minutos_a_cobrar_por_hora(minutos_reales)
     else:
         minutos_facturados = minutos_reales
     monto = minutos_facturados * mesa["tarifa_por_minuto"]

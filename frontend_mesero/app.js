@@ -639,7 +639,7 @@ async function renderBillar() {
       <div class="card-m-meta">${formatoMoneda(mesa.tarifa_por_minuto)}/min · ${configTexto}</div>
       ${sesion ? `
         <div class="timer-mesa-m" data-timer-inicio="${sesion.hora_inicio}" data-timer-modo="${sesion.modo}" data-timer-limite="${sesion.limite_minutos || ''}">00:00</div>
-        <div class="card-m-meta">${sesion.politica_cobro === 'hora_completa' ? 'Cobro por hora completa' : 'Cobro por tiempo exacto'}</div>
+        <div class="card-m-meta">${sesion.politica_cobro === 'hora_completa' ? 'Cobro por hora' : 'Cobro por minuto'}</div>
       ` : ''}
       <div class="mesa-acciones-m" style="margin-top:12px;"></div>
     `;
@@ -699,7 +699,7 @@ function abrirModalIniciarBillar(mesa, cuentasAbiertas) {
 
   const resumenTexto = () => {
     const partes = [modo === 'temporizador' ? `Temporizador ${limiteHoras}h` : 'Cronómetro (sin límite)'];
-    partes.push(politica === 'hora_completa' ? 'hora completa' : 'tiempo exacto');
+    partes.push(politica === 'hora_completa' ? 'por hora' : 'por minuto');
     return partes.join(' · ');
   };
 
@@ -730,11 +730,16 @@ function abrirModalIniciarBillar(mesa, cuentasAbiertas) {
         </div>
         <input type="number" id="mib-limite-horas-m" step="0.25" min="0.25" value="${limiteHoras}" />
       </div>
-      <label>Política de cobro</label>
-      <div class="fila" id="mib-politica-botones-m" style="margin-bottom:6px;">
-        <button type="button" class="btn btn-chico ${politica === 'exacto' ? 'btn-primario' : 'btn-secundario'}" data-politica="exacto">Tiempo exacto</button>
-        <button type="button" class="btn btn-chico ${politica === 'hora_completa' ? 'btn-primario' : 'btn-secundario'}" data-politica="hora_completa">Hora completa</button>
+      <div id="mib-politica-seccion-m" style="${modo === 'temporizador' ? 'display:none;' : ''}">
+        <label>Política de cobro</label>
+        <div class="fila" id="mib-politica-botones-m" style="margin-bottom:6px;">
+          <button type="button" class="btn btn-chico ${politica === 'exacto' ? 'btn-primario' : 'btn-secundario'}" data-politica="exacto">Por minuto</button>
+          <button type="button" class="btn btn-chico ${politica === 'hora_completa' ? 'btn-primario' : 'btn-secundario'}" data-politica="hora_completa">Por hora</button>
+        </div>
       </div>
+      <p id="mib-politica-fija-temporizador-m" class="card-m-meta" style="${modo === 'temporizador' ? '' : 'display:none;'}">
+        Temporizador siempre cobra por hora (30 min de gracia en la 1ª hora, 10 min en las siguientes).
+      </p>
     </div>
 
     <div class="fila" style="margin-top:10px;">
@@ -754,6 +759,9 @@ function abrirModalIniciarBillar(mesa, cuentasAbiertas) {
       document.querySelectorAll('#mib-modo-botones-m [data-modo]').forEach((b) => b.classList.toggle('btn-primario', b === btn));
       document.querySelectorAll('#mib-modo-botones-m [data-modo]').forEach((b) => b.classList.toggle('btn-secundario', b !== btn));
       document.getElementById('mib-limite-cont-m').style.display = modo === 'temporizador' ? '' : 'none';
+      document.getElementById('mib-politica-seccion-m').style.display = modo === 'temporizador' ? 'none' : '';
+      document.getElementById('mib-politica-fija-temporizador-m').style.display = modo === 'temporizador' ? '' : 'none';
+      if (modo === 'temporizador') politica = 'hora_completa';
       document.getElementById('mib-resumen-m').textContent = resumenTexto();
     });
   });

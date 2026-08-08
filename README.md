@@ -259,6 +259,45 @@ de eso: hoy cualquiera en la red alcanza el sistema con solo saber la
 dirección (no hay nada "secreto" en la URL), lo cual es razonable en
 una red cerrada del negocio pero no en una wifi pública.
 
+**Si el celular da error al abrir la dirección** ("no se puede acceder
+a este sitio", "conexión rechazada", o se queda cargando sin nada),
+probá en este orden:
+
+1. **Confirmá que las dos cosas están en la MISMA wifi.** No alcanza
+   con que ambos tengan wifi prendido — tienen que estar conectados a
+   la misma red (no una wifi de invitados separada, no uno con wifi y
+   otro con datos móviles). En Android/Termux, si el celular que corre
+   el sistema tiene datos móviles Y wifi prendidos a la vez, a veces
+   detecta la IP de datos móviles en vez de la de wifi. Por eso, desde
+   la versión más reciente, Configuración muestra **más de una
+   dirección candidata** si detecta más de una red activa — probá cada
+   una desde el celular del mesero hasta que una funcione. Si ninguna
+   funciona, apagá los datos móviles del celular que corre el sistema
+   y volvé a abrirlo (así solo queda la IP de wifi).
+2. **Windows: el firewall.** Si al arrancar el programa Windows
+   pregunta "¿Permitir que FlowPos se comunique en redes...?" y se le
+   dio "Cancelar" o "No" sin querer, hay que revertirlo a mano:
+   Configuración de Windows → Firewall de Windows Defender → Permitir
+   una aplicación → buscar FlowPos y marcar las casillas de red
+   privada.
+3. **Confirmá la dirección escribiéndola a mano.** Si el QR no
+   escanea bien (poca luz, cámara del celular), escribí la dirección
+   completa en el navegador del celular, tal cual aparece en
+   Configuración — con `http://` adelante, sin espacios.
+4. **Probá primero desde la misma PC/celular que corre el sistema.**
+   Abrí el navegador ahí mismo y entrá a la dirección que le
+   estás dando al mesero (ej: `http://192.168.1.23:8000/mesero`). Si
+   ni siquiera ahí funciona, el problema es de la dirección detectada
+   (volvé al punto 1); si ahí sí funciona pero no desde el celular del
+   mesero, el problema es de red/firewall entre los dos dispositivos
+   (routers con "aislamiento de clientes" activado bloquean esto —
+   revisar la configuración del router, o desactivar esa opción).
+5. **Termux específicamente:** si Termux estuvo mucho tiempo en
+   segundo plano, Android puede haberlo pausado o haberle cortado la
+   red por ahorro de batería. Volvé a poner Termux en primer plano y
+   fijate que el proceso siga corriendo antes de asumir que es un
+   problema de dirección.
+
 ---
 
 ## 8. Roles y permisos
