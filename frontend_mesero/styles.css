@@ -1,0 +1,434 @@
+/* =====================================================================
+   FlowPos -- Mesero. Mobile-first: pantalla chica, dedos en vez de
+   mouse, a veces con poca luz o con las manos ocupadas. Misma paleta
+   que el escritorio (carbón + ámbar) para que se sienta el mismo
+   sistema, pero cada objetivo táctil es grande a propósito -- nada de
+   apretar dos botones pequeños pegados mientras se lleva una bandeja.
+   Sin CDN: todo debe funcionar sin internet.
+   ===================================================================== */
+
+:root {
+  --bg: #14161B;
+  --bg-panel: #1D2027;
+  --bg-panel-alto: #262A33;
+  --borde: #333844;
+  --texto: #F1EFE9;
+  --texto-tenue: #9AA0AC;
+  --ambar: #D9A62E;
+  --ambar-oscuro: #B8871E;
+  --verde: #3FA34D;
+  --rojo: #D6494A;
+  --azul: #4A90D9;
+  --radio: 14px;
+  --fuente: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --toque: 52px; /* alto mínimo de cualquier botón/objetivo táctil */
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--texto);
+  font-family: var(--fuente);
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior-y: contain;
+}
+
+button { font-family: var(--fuente); cursor: pointer; }
+.oculto { display: none !important; }
+
+/* ---------------- Login ---------------- */
+
+.vista-login {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.login-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  padding: 32px 22px;
+  width: 100%;
+  max-width: 380px;
+  text-align: center;
+}
+
+.login-titulo {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--ambar);
+  letter-spacing: 0.02em;
+}
+
+.login-titulo-sub {
+  font-size: 0.95rem;
+  font-weight: 400;
+  color: var(--texto-tenue);
+}
+
+.login-subtitulo { margin: 6px 0 20px; color: var(--texto-tenue); }
+
+.pin-display { display: flex; justify-content: center; gap: 12px; margin-bottom: 10px; }
+
+.pin-dot {
+  width: 16px; height: 16px; border-radius: 50%;
+  border: 2px solid var(--borde); background: transparent;
+}
+.pin-dot.lleno { background: var(--ambar); border-color: var(--ambar); }
+
+.pin-error { min-height: 20px; color: var(--rojo); font-size: 0.85rem; margin-bottom: 8px; }
+
+.pin-pad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.pin-btn {
+  height: 64px;
+  font-size: 1.4rem;
+  font-weight: 600;
+  border-radius: var(--radio);
+  border: 1px solid var(--borde);
+  background: var(--bg-panel-alto);
+  color: var(--texto);
+}
+.pin-btn:active { background: var(--ambar-oscuro); color: #1A1A1A; }
+.pin-btn-accion { color: var(--texto-tenue); font-size: 1.1rem; }
+
+/* ---------------- Shell / header / nav ---------------- */
+
+#app-shell { min-height: 100dvh; display: flex; flex-direction: column; }
+
+.app-header-m {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px;
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--borde);
+  position: sticky; top: 0; z-index: 10;
+}
+
+.header-usuario { font-weight: 600; }
+
+.btn-icono-m {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--borde);
+  background: var(--bg-panel-alto);
+  color: var(--texto);
+  font-size: 1.1rem;
+  display: flex; align-items: center; justify-content: center;
+}
+
+#app-main-m {
+  flex: 1;
+  padding: 14px 14px 90px;
+  overflow-y: auto;
+}
+
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  display: flex;
+  background: var(--bg-panel);
+  border-top: 1px solid var(--borde);
+  padding: 6px 6px calc(6px + env(safe-area-inset-bottom));
+  z-index: 20;
+}
+
+.bn-btn {
+  flex: 1;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 8px 4px;
+  border: none; background: none; color: var(--texto-tenue);
+  font-size: 0.75rem; font-weight: 600;
+  border-radius: 10px;
+}
+.bn-btn.activo { color: var(--ambar); background: rgba(217,166,46,0.1); }
+.bn-icono { font-size: 1.3rem; }
+
+/* ---------------- Layout genérico ---------------- */
+
+.fila-entre { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.titulo-vista { margin: 4px 0 14px; font-size: 1.3rem; }
+
+.vacio {
+  text-align: center; color: var(--texto-tenue);
+  padding: 40px 14px; font-size: 0.95rem;
+}
+
+.aviso-panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  padding: 22px 18px;
+  text-align: center;
+  margin-top: 20px;
+}
+.aviso-panel h2 { margin-top: 0; font-size: 1.15rem; }
+
+/* ---------------- Botones ---------------- */
+
+.btn {
+  min-height: var(--toque);
+  padding: 12px 18px;
+  border-radius: var(--radio);
+  border: none;
+  font-size: 1rem;
+  font-weight: 600;
+}
+.btn-bloque { display: block; width: 100%; }
+.btn-primario { background: var(--ambar); color: #1A1A1A; }
+.btn-primario:disabled { background: var(--borde); color: var(--texto-tenue); }
+.btn-secundario { background: var(--bg-panel-alto); color: var(--texto); border: 1px solid var(--borde); }
+.btn-peligro { background: var(--rojo); color: #fff; }
+.btn-verde { background: var(--verde); color: #fff; }
+.btn-verde:disabled { background: var(--borde); color: var(--texto-tenue); }
+.btn-chico { min-height: 40px; padding: 6px 14px; font-size: 0.85rem; }
+.btn-icono-chico {
+  width: 40px; height: 40px; min-height: 40px;
+  border-radius: 50%; padding: 0;
+  background: rgba(214,73,74,0.15); color: var(--rojo); border: none;
+  font-size: 1.1rem; line-height: 1;
+}
+
+.fila { display: flex; gap: 10px; flex-wrap: wrap; }
+.col { display: flex; flex-direction: column; gap: 10px; }
+
+/* ---------------- FAB ---------------- */
+
+.fab {
+  position: fixed;
+  right: 18px; bottom: calc(78px + env(safe-area-inset-bottom));
+  width: 60px; height: 60px;
+  border-radius: 50%;
+  background: var(--ambar); color: #1A1A1A;
+  border: none;
+  font-size: 1.8rem;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+  z-index: 15;
+  display: flex; align-items: center; justify-content: center;
+}
+.fab:active { background: var(--ambar-oscuro); }
+
+/* ---------------- Cards de mesas/cuentas ---------------- */
+
+.grid-cards-m {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.card-m {
+  background: var(--bg-panel);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  padding: 16px 14px;
+  text-align: left;
+  color: var(--texto);
+}
+.card-m:active { border-color: var(--ambar); }
+
+.card-m-titulo { font-weight: 700; font-size: 1.05rem; }
+.card-m-meta { color: var(--texto-tenue); font-size: 0.82rem; margin-top: 4px; }
+.card-m-monto { font-family: "Consolas", "SFMono-Regular", Menlo, monospace; font-size: 1.05rem; margin-top: 10px; }
+
+/* ---------------- Badges ---------------- */
+
+.badge-m {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin-top: 8px;
+}
+.badge-m-verde { background: rgba(63,163,77,0.18); color: var(--verde); }
+.badge-m-ambar { background: rgba(217,166,46,0.18); color: var(--ambar); }
+.badge-m-rojo { background: rgba(214,73,74,0.18); color: var(--rojo); }
+.badge-m-gris { background: rgba(154,160,172,0.18); color: var(--texto-tenue); }
+
+/* ---------------- Panel detalle de cuenta ---------------- */
+
+.panel-m {
+  background: var(--bg-panel);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  padding: 16px;
+  margin-bottom: 14px;
+}
+
+.item-linea-m {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--borde);
+}
+.item-linea-m:last-child { border-bottom: none; }
+.item-linea-m.cancelado { opacity: 0.45; text-decoration: line-through; }
+
+.item-linea-m-info { min-width: 0; }
+.item-linea-m-titulo { font-weight: 600; }
+.item-linea-m-meta { color: var(--texto-tenue); font-size: 0.78rem; margin-top: 2px; }
+
+.resumen-fila {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 0;
+}
+.resumen-fila.total { border-top: 1px solid var(--borde); padding-top: 12px; margin-top: 4px; }
+.resumen-fila .monto-grande { font-size: 1.3rem; font-family: "Consolas", "SFMono-Regular", Menlo, monospace; font-weight: 700; }
+
+/* ---------------- Modal / overlay ---------------- */
+
+.overlay {
+  position: fixed; inset: 0;
+  background: rgba(10,11,14,0.72);
+  display: flex; align-items: flex-end; justify-content: center;
+  z-index: 50;
+}
+
+.overlay-panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--borde);
+  border-radius: 18px 18px 0 0;
+  padding: 20px 18px calc(20px + env(safe-area-inset-bottom));
+  width: 100%;
+  max-width: 480px;
+  max-height: 88dvh;
+  overflow-y: auto;
+}
+
+.overlay-panel h3 { margin-top: 0; }
+
+label { display: block; font-size: 0.85rem; color: var(--texto-tenue); margin-bottom: 6px; }
+
+input[type=text], input[type=number], select {
+  width: 100%;
+  background: var(--bg-panel-alto);
+  border: 1px solid var(--borde);
+  border-radius: 10px;
+  color: var(--texto);
+  padding: 12px 14px;
+  font-size: 1rem;
+  min-height: var(--toque);
+  margin-bottom: 14px;
+}
+input:focus, select:focus { outline: 2px solid var(--ambar); border-color: var(--ambar); }
+
+/* ---------------- Selector de productos ---------------- */
+
+.categoria-titulo {
+  margin: 16px 0 8px;
+  color: var(--texto-tenue);
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+}
+.categoria-titulo:first-child { margin-top: 0; }
+
+.producto-fila {
+  background: var(--bg-panel-alto);
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 8px;
+}
+
+.producto-fila-header {
+  width: 100%;
+  background: none; border: none; color: inherit;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 10px;
+  min-height: var(--toque);
+  text-align: left;
+  font-size: 1rem;
+}
+
+.producto-fila-cantidad {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 10px 10px;
+  border-top: 1px solid var(--borde);
+  margin-top: 2px;
+}
+
+.stepper { display: flex; align-items: center; gap: 14px; }
+.stepper-btn {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 1px solid var(--borde); background: var(--bg-panel);
+  color: var(--texto); font-size: 1.2rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.stepper-valor { font-size: 1.1rem; font-weight: 700; min-width: 22px; text-align: center; }
+
+/* ---------------- Toasts ---------------- */
+
+.toast-container {
+  position: fixed; top: calc(10px + env(safe-area-inset-top)); left: 0; right: 0;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  z-index: 100; pointer-events: none;
+  padding: 0 14px;
+}
+.toast {
+  background: var(--bg-panel-alto);
+  border-left: 4px solid var(--azul);
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  max-width: 420px;
+  width: 100%;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+}
+.toast-error { border-left-color: var(--rojo); }
+.toast-exito { border-left-color: var(--verde); }
+
+.aviso-inactividad-m {
+  position: fixed;
+  left: 14px;
+  right: 14px;
+  bottom: calc(78px + env(safe-area-inset-bottom));
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: var(--bg-panel-alto);
+  border: 1px solid var(--ambar);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 0.85rem;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.35);
+  animation: aparecer-aviso-inactividad-m 0.25s ease-out;
+}
+
+@keyframes aparecer-aviso-inactividad-m {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------------- Timer de billar ---------------- */
+
+.timer-mesa-m {
+  font-family: "Consolas", "SFMono-Regular", Menlo, monospace;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--ambar);
+  margin-top: 8px;
+}
+
+.timer-mesa-m.timer-cumplido-m {
+  color: var(--rojo);
+  animation: parpadeo-tiempo-cumplido-m 1s infinite;
+}
+
+@keyframes parpadeo-tiempo-cumplido-m {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}

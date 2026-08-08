@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>FlowPos — Mesero</title>
+<link rel="stylesheet" href="/static-mesero/styles.css" />
+</head>
+<body>
+
+<div id="toast-container" class="toast-container"></div>
+
+<!-- Pantalla de login -->
+<section id="vista-login" class="vista-login">
+  <div class="login-card">
+    <h1 class="login-titulo">FlowPos <span class="login-titulo-sub">mesero</span></h1>
+    <p class="login-subtitulo">Ingresa tu PIN</p>
+    <div id="pin-display" class="pin-display"></div>
+    <div id="pin-error" class="pin-error"></div>
+    <div class="pin-pad">
+      <button class="pin-btn" data-num="1">1</button>
+      <button class="pin-btn" data-num="2">2</button>
+      <button class="pin-btn" data-num="3">3</button>
+      <button class="pin-btn" data-num="4">4</button>
+      <button class="pin-btn" data-num="5">5</button>
+      <button class="pin-btn" data-num="6">6</button>
+      <button class="pin-btn" data-num="7">7</button>
+      <button class="pin-btn" data-num="8">8</button>
+      <button class="pin-btn" data-num="9">9</button>
+      <button class="pin-btn pin-btn-accion" id="pin-limpiar">C</button>
+      <button class="pin-btn" data-num="0">0</button>
+      <button class="pin-btn pin-btn-accion" id="pin-borrar">&larr;</button>
+    </div>
+    <button class="btn btn-primario btn-bloque" id="pin-entrar" style="margin-top:16px;">Entrar</button>
+  </div>
+</section>
+
+<!-- App -->
+<div id="app-shell" class="oculto">
+  <header class="app-header-m">
+    <span id="header-usuario" class="header-usuario"></span>
+    <button id="btn-logout-m" class="btn-icono-m" title="Salir" aria-label="Salir">&#9211;</button>
+  </header>
+
+  <main id="app-main-m"></main>
+
+  <nav class="bottom-nav">
+    <button class="bn-btn activo" data-vista="mesas">
+      <span class="bn-icono">🍽️</span><span>Mesas</span>
+    </button>
+    <button class="bn-btn" data-vista="billar">
+      <span class="bn-icono">🎱</span><span>Billar</span>
+    </button>
+  </nav>
+</div>
+
+<script src="/static-mesero/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,3 @@
+PIN inicial del Gerente: 963400
+Cámbialo desde Configuración (el engranaje) apenas entres.
+Podés borrar este archivo después de anotarlo en un lugar seguro.

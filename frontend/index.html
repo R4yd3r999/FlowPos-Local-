@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+<title>FlowPos (Local)</title>
+<link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+
+<div id="toast-container" class="toast-container"></div>
+
+<!-- Pantalla de login -->
+<section id="vista-login" class="vista vista-login">
+  <div class="login-card">
+    <h1 class="login-titulo">FlowPos <span class="login-titulo-sub">(Local)</span></h1>
+    <p class="login-descripcion">Sistema de Punto de Venta y Gestión Empresarial</p>
+    <p class="login-subtitulo">Ingresa tu PIN</p>
+    <div id="pin-display" class="pin-display"></div>
+    <div id="pin-error" class="pin-error"></div>
+    <div class="pin-pad">
+      <button class="pin-btn" data-num="1">1</button>
+      <button class="pin-btn" data-num="2">2</button>
+      <button class="pin-btn" data-num="3">3</button>
+      <button class="pin-btn" data-num="4">4</button>
+      <button class="pin-btn" data-num="5">5</button>
+      <button class="pin-btn" data-num="6">6</button>
+      <button class="pin-btn" data-num="7">7</button>
+      <button class="pin-btn" data-num="8">8</button>
+      <button class="pin-btn" data-num="9">9</button>
+      <button class="pin-btn pin-btn-secundario" id="pin-borrar">Borrar</button>
+      <button class="pin-btn" data-num="0">0</button>
+      <button class="pin-btn pin-btn-secundario" id="pin-limpiar">C</button>
+    </div>
+    <button class="btn btn-primario btn-bloque" id="pin-entrar" style="margin-top:14px;">Entrar</button>
+  </div>
+</section>
+
+<!-- App principal (oculta hasta login) -->
+<div id="app-shell" class="app-shell oculto">
+  <header class="app-header">
+    <div class="app-header-izq">
+      <span class="app-logo">FlowPos <span class="app-logo-sub">(Local)</span></span>
+    </div>
+    <nav class="app-nav" id="app-nav">
+      <button class="nav-btn" data-vista="ventas">Ventas</button>
+      <button class="nav-btn" data-vista="billar">Billar</button>
+      <button class="nav-btn" data-vista="productos">Productos</button>
+      <button class="nav-btn" data-vista="insumos" data-permiso="ver_insumos">Insumos</button>
+      <button class="nav-btn" data-vista="movimientos" data-permiso="ver_insumos">Movimientos</button>
+      <button class="nav-btn" data-vista="dashboard" data-permiso="operar_caja">Dashboard</button>
+      <button class="nav-btn" data-vista="cierre" data-permiso="operar_caja">Cierre de caja</button>
+    </nav>
+    <div class="app-header-der">
+      <span id="usuario-actual" class="usuario-actual"></span>
+      <button id="btn-config" class="btn-logout oculto" title="Configuración" aria-label="Configuración">&#9881;</button>
+      <button id="btn-logout" class="btn-logout">Salir</button>
+    </div>
+  </header>
+
+  <main id="app-main" class="app-main"></main>
+</div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
